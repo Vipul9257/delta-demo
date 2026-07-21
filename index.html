@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moms Tailor | Custom Stitching & Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+  /* ================= VARIABLES ================= */
+  :root{
+    --gold:#c9973a;
+    --dark:#241611;
+    --cream:#fbf3e6;
+    --maroon:#7a1f2b;
+    --text:#3a2b26;
+    --thread:#c9973a;
+    --transition:.35s ease;
+  }
+  body.dark{
+    --cream:#1b1210;
+    --text:#e9dcc9;
+    --dark:#0f0a08;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Segoe UI', Georgia, serif;
+    background:var(--cream);
+    color:var(--text);
+    overflow-x:hidden;
+    transition:background var(--transition), color var(--transition);
+    cursor:none;
+  }
+  h1,h2,h3{font-family:Georgia,'Playfair Display',serif;}
+  a{text-decoration:none;color:inherit;}
+  img{max-width:100%;display:block;}
+  ::selection{background:var(--gold);color:#fff;}
+
+  /* ================= CUSTOM NEEDLE CURSOR ================= */
+  #needle-cursor{
+    position:fixed;top:0;left:0;width:26px;height:26px;
+    pointer-events:none;z-index:9999;
+    background:radial-gradient(circle,var(--gold) 0%,transparent 70%);
+    border:2px solid var(--gold);border-radius:50%;
+    transform:translate(-50%,-50%);
+    transition:width .15s, height .15s, background .15s;
+    mix-blend-mode:difference;
+  }
+  #needle-dot{
+    position:fixed;top:0;left:0;width:6px;height:6px;background:var(--gold);
+    border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);
+  }
+  @media(max-width:900px){
+    #needle-cursor,#needle-dot{display:none;}
+    body{cursor:auto;}
+  }
+
+  /* ================= PRELOADER ================= */
+  #preloader{
+    position:fixed;inset:0;background:var(--dark);z-index:10000;
+    display:flex;align-items:center;justify-content:center;
+    transition:opacity .6s, visibility .6s;
+  }
+  #preloader svg{width:120px;height:120px;}
+  .needle-path{
+    stroke:var(--gold);stroke-width:3;fill:none;
+    stroke-dasharray:300;stroke-dashoffset:300;
+    animation:sew 1.8s linear infinite;
+  }
+  @keyframes sew{
+    to{stroke-dashoffset:0;}
+  }
+  #preloader.hide{opacity:0;visibility:hidden;}
+
+  /* ================= HEADER ================= */
+  header{
+    position:fixed;top:0;left:0;width:100%;z-index:1000;
+    background:rgba(36,22,17,0.92);backdrop-filter:blur(6px);
+    color:#fff;transition:.4s;
+  }
+  .nav-wrap{display:flex;justify-content:space-between;align-items:center;padding:16px 5%;}
+  .logo{font-size:1.7rem;font-weight:bold;color:var(--gold);letter-spacing:1px;position:relative;}
+  .logo span{color:#fff;}
+  nav ul{list-style:none;display:flex;gap:30px;}
+  nav ul li a{color:#fff;font-size:.95rem;position:relative;padding-bottom:5px;}
+  nav ul li a::after{
+    content:'';position:absolute;left:0;bottom:0;width:0;height:2px;background:var(--gold);
+    transition:width .3s;
+  }
+  nav ul li a:hover::after{width:100%;}
+  .mode-toggle{
+    background:none;border:1px solid var(--gold);color:var(--gold);
+    border-radius:20px;padding:6px 14px;cursor:pointer;font-size:.85rem;transition:.3s;
+  }
+  .mode-toggle:hover{background:var(--gold);color:var(--dark);}
+  .menu-toggle{display:none;font-size:1.8rem;color:#fff;background:none;border:none;cursor:pointer;}
+  @media(max-width:768px){
+    nav ul{
+      position:absolute;top:100%;left:0;width:100%;background:var(--dark);
+      flex-direction:column;align-items:center;padding:20px 0;display:none;
+    }
+    nav ul.active{display:flex;}
+    nav ul li{margin:10px 0;}
+    .menu-toggle{display:block;}
+  }
+
+  /* ================= HERO ================= */
+  .hero{
+    height:100vh;min-height:600px;position:relative;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;
+    background:linear-gradient(rgba(20,12,9,0.7),rgba(20,12,9,0.75)),
+      url('https://images.unsplash.com/photo-1558877385-81a1c7e67d72?auto=format&fit=crop&w=1600&q=80') center/cover;
+  }
+  .hero-content{position:relative;z-index:2;padding:0 5%;max-width:750px;}
+  .hero-content h1{
+    font-size:3rem;margin-bottom:18px;color:#fff;position:relative;display:inline-block;
+  }
+  .hero-content h1 span{color:var(--gold);}
+  #typed-text{border-right:3px solid var(--gold);white-space:nowrap;overflow:hidden;display:inline-block;}
+  .hero-content p{font-size:1.15rem;margin:20px auto 30px;max-width:600px;opacity:.9;}
+  .btn{
+    display:inline-block;padding:14px 32px;margin:8px;border-radius:30px;
+    font-weight:bold;transition:.3s;border:2px solid transparent;cursor:pointer;
+    position:relative;overflow:hidden;
+  }
+  .btn-primary{background:var(--gold);color:var(--dark);}
+  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(201,151,58,0.4);}
+  .btn-outline{border:2px solid #fff;color:#fff;}
+  .btn-outline:hover{background:#fff;color:var(--dark);transform:translateY(-3px);}
+
+  /* thread SVG floating over hero */
+  .thread-svg{position:absolute;bottom:-2px;left:0;width:100%;z-index:1;}
+
+  /* ================= SCROLL REVEAL ================= */
+  .reveal{opacity:0;transform:translateY(40px);transition:all .8s ease;}
+  .reveal.active{opacity:1;transform:translateY(0);}
+
+  section{padding:90px 5%;position:relative;}
+  .section-title{text-align:center;margin-bottom:55px;}
+  .section-title h2{font-size:2.4rem;color:var(--maroon);position:relative;display:inline-block;}
+  .section-title h2::after{
+    content:'';display:block;width:60px;height:3px;background:var(--gold);
+    margin:14px auto 0;border-radius:2px;
+  }
+  .section-title p{color:#8a776b;margin-top:12px;}
+  body.dark .section-title p{color:#b8a68f;}
+
+  /* ================= ABOUT ================= */
+  .about{display:flex;gap:60px;align-items:center;flex-wrap:wrap;background:transparent;}
+  .about-img{flex:1;min-width:280px;position:relative;}
+  .about-img img{border-radius:10px;box-shadow:0 15px 40px rgba(0,0,0,0.2);}
+  .about-img::before{
+    content:'';position:absolute;top:-15px;left:-15px;width:100%;height:100%;
+    border:3px dashed var(--gold);border-radius:10px;z-index:-1;
+  }
+  .about-text{flex:1;min-width:280px;}
+  .about-text h2{font-size:2.2rem;color:var(--maroon);margin-bottom:20px;}
+  .about-text p{margin-bottom:15px;color:#5b4a41;}
+  body.dark .about-text p{color:#cbb89f;}
+  .stats{display:flex;gap:40px;margin-top:30px;flex-wrap:wrap;}
+  .stat{text-align:center;}
+  .stat h3{color:var(--gold);font-size:2.2rem;font-weight:bold;}
+  .stat p{font-size:.9rem;color:#8a776b;}
+
+  /* ================= SERVICES ================= */
+  .service-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:30px;}
+  .flip-card{background:transparent;height:230px;perspective:1000px;}
+  .flip-inner{
+    position:relative;width:100%;height:100%;transition:transform .6s;
+    transform-style:preserve-3d;
+  }
+  .flip-card:hover .flip-inner{transform:rotateY(180deg);}
+  .flip-front,.flip-back{
+    position:absolute;width:100%;height:100%;backface-visibility:hidden;
+    border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:20px;text-align:center;
+  }
+  .flip-front{background:#fff;box-shadow:0 6px 20px rgba(0,0,0,0.08);}
+  body.dark .flip-front{background:#2a1d17;}
+  .flip-back{background:var(--maroon);color:#fff;transform:rotateY(180deg);}
+  .flip-front .icon{font-size:2.6rem;margin-bottom:12px;}
+  .flip-front h3{color:var(--maroon);font-size:1.15rem;}
+  body.dark .flip-front h3{color:var(--gold);}
+  .flip-back p{font-size:.9rem;line-height:1.5;}
+
+  /* ================= GALLERY ================= */
+  .filter-bar{display:flex;justify-content:center;gap:14px;margin-bottom:35px;flex-wrap:wrap;}
+  .filter-btn{
+    padding:8px 20px;border-radius:20px;border:1px solid var(--gold);background:transparent;
+    color:var(--maroon);cursor:pointer;transition:.3s;font-size:.9rem;
+  }
+  body.dark .filter-btn{color:var(--gold);}
+  .filter-btn.active,.filter-btn:hover{background:var(--gold);color:#fff;}
+  .gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
+  .gallery-item{overflow:hidden;border-radius:10px;position:relative;cursor:pointer;}
+  .gallery-item img{transition:.5s;height:250px;object-fit:cover;width:100%;}
+  .gallery-item:hover img{transform:scale(1.1);}
+  .gallery-overlay{
+    position:absolute;inset:0;background:rgba(122,31,43,0.7);opacity:0;
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.6rem;
+    transition:.3s;
+  }
+  .gallery-item:hover .gallery-overlay{opacity:1;}
+
+  /* Lightbox */
+  #lightbox{
+    position:fixed;inset:0;background:rgba(0,0,0,0.9);display:none;
+    align-items:center;justify-content:center;z-index:5000;
+  }
+  #lightbox img{max-width:85%;max-height:80%;border-radius:8px;}
+  #lightbox .close-lb{
+    position:absolute;top:25px;right:35px;color:#fff;font-size:2rem;cursor:pointer;
+  }
+
+  /* ================= PRICE ESTIMATOR ================= */
+  .estimator{background:#fff;border-radius:14px;padding:40px;box-shadow:0 10px 30px rgba(0,0,0,0.08);max-width:700px;margin:0 auto;}
+  body.dark .estimator{background:#2a1d17;}
+  .estimator h3{color:var(--maroon);margin-bottom:20px;text-align:center;}
+  body.dark .estimator h3{color:var(--gold);}
+  .estimator-row{display:flex;gap:15px;flex-wrap:wrap;margin-bottom:18px;}
+  .estimator-row select,.estimator-row input{
+    flex:1;padding:12px;border-radius:8px;border:1px solid #ddd;font-family:inherit;min-width:150px;
+  }
+  .estimate-result{
+    text-align:center;font-size:1.4rem;color:var(--maroon);font-weight:bold;margin-top:20px;
+  }
+  body.dark .estimate-result{color:var(--gold);}
+
+  /* ================= TESTIMONIALS ================= */
+  .testimonials{background:var(--maroon);color:#fff;overflow:hidden;}
+  .testimonials .section-title h2{color:#fff;}
+  .testimonials .section-title p{color:#e0c9b0;}
+  .testi-slider{position:relative;max-width:700px;margin:0 auto;min-height:180px;}
+  .testi-slide{
+    position:absolute;width:100%;opacity:0;transform:translateX(40px);
+    transition:opacity .6s, transform .6s;text-align:center;
+  }
+  .testi-slide.active{opacity:1;transform:translateX(0);position:relative;}
+  .testi-slide p{font-style:italic;font-size:1.1rem;margin-bottom:15px;}
+  .testi-name{font-weight:bold;color:var(--gold);}
+  .testi-dots{display:flex;justify-content:center;gap:10px;margin-top:25px;}
+  .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.4);cursor:pointer;transition:.3s;}
+  .dot.active{background:var(--gold);width:26px;border-radius:6px;}
+
+  /* ================= CONTACT ================= */
+  .contact-wrap{display:flex;gap:50px;flex-wrap:wrap;}
+  .contact-info{flex:1;min-width:280px;}
+  .contact-info h3{color:var(--maroon);margin-bottom:20px;font-size:1.5rem;}
+  body.dark .contact-info h3{color:var(--gold);}
+  .contact-item{display:flex;gap:12px;margin-bottom:20px;align-items:flex-start;}
+  .contact-item .icon{font-size:1.5rem;}
+  .contact-form{flex:1;min-width:280px;background:#fff;padding:35px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.08);}
+  body.dark .contact-form{background:#2a1d17;}
+  .contact-form input,.contact-form textarea{
+    width:100%;padding:13px;margin-bottom:16px;border:1px solid #ddd;border-radius:8px;
+    font-family:inherit;background:transparent;color:var(--text);
+  }
+  .contact-form button{
+    width:100%;padding:14px;background:var(--maroon);color:#fff;border:none;border-radius:8px;
+    font-weight:bold;cursor:pointer;transition:.3s;
+  }
+  .contact-form button:hover{background:var(--gold);color:var(--dark);}
+  #formMsg{text-align:center;margin-top:12px;color:green;font-weight:bold;display:none;}
+
+  /* ================= FOOTER ================= */
+  footer{background:var(--dark);color:#fff;text-align:center;padding:35px 5%;}
+  footer p{color:#c9b8a8;font-size:.9rem;}
+  .socials{margin:15px 0;}
+  .socials a{margin:0 12px;font-size:1.4rem;color:#fff;transition:.3s;}
+  .socials a:hover{color:var(--gold);transform:translateY(-3px);display:inline-block;}
+
+  /* ================= FLOATING BUTTONS ================= */
+  .whatsapp-float{
+    position:fixed;bottom:25px;right:25px;background:#25D366;color:#fff;
+    width:58px;height:58px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;font-size:1.7rem;box-shadow:0 4px 15px rgba(0,0,0,0.3);
+    z-index:999;animation:pulse 2s infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(37,211,102,0.6);}
+    70%{box-shadow:0 0 0 14px rgba(37,211,102,0);}
+    100%{box-shadow:0 0 0 0 rgba(37,211,102,0);}
+  }
+  #backToTop{
+    position:fixed;bottom:25px;left:25px;background:var(--gold);color:var(--dark);
+    width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:1.3rem;cursor:pointer;opacity:0;transition:.3s;z-index:999;border:none;
+  }
+  #backToTop.show{opacity:1;}
+
+  /* progress bar */
+  #scroll-progress{
+    position:fixed;top:0;left:0;height:4px;background:var(--gold);z-index:1001;width:0%;transition:width .1s;
+  }
+</style>
+</head>
+<body>
+
+<div id="scroll-progress"></div>
+
+<!-- Preloader -->
+<div id="preloader">
+  <svg viewBox="0 0 200 200">
+    <path class="needle-path" d="M20,100 Q60,20 100,100 T180,100"/>
+  </svg>
+</div>
+
+<!-- Custom cursor -->
+<div id="needle-cursor"></div>
+<div id="needle-dot"></div>
+
+<header>
+  <div class="nav-wrap">
+    <div class="logo">Moms <span>Tailor</span></div>
+    <button class="menu-toggle" id="menuToggle">&#9776;</button>
+    <nav>
+      <ul id="navMenu">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#estimate">Get Estimate</a></li>
+        <li><a href="#reviews">Reviews</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <button class="mode-toggle" id="modeToggle">🌙 Dark</button>
+  </div>
+</header>
+
+<section class="hero" id="home">
+  <div class="hero-content">
+    <h1><span id="typed-text"></span></h1>
+    <p>Custom tailoring, elegant alterations, and handcrafted designs — made with love, precision, and over 15 years of stitching experience.</p>
+    <a href="#contact" class="btn btn-primary">Book an Appointment</a>
+    <a href="#estimate" class="btn btn-outline">Get Price Estimate</a>
+  </div>
+  <svg class="thread-svg" viewBox="0 0 1440 100" preserveAspectRatio="none">
+    <path d="M0,50 Q360,100 720,50 T1440,50 V100 H0 Z" fill="#fbf3e6"/>
+  </svg>
+</section>
+
+<section id="about" class="about reveal">
+  <div class="about-img">
+    <img src="https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=800&q=80" alt="Moms Tailor at work">
+  </div>
+  <div class="about-text">
+    <h2>Our Story</h2>
+    <p>Moms Tailor began as a small home-based passion project and grew into a trusted name for quality stitching, precise alterations, and creative custom designs.</p>
+    <p>Every garment is stitched with care — combining traditional techniques with a modern eye for detail, tailored exactly to your taste, size, and budget.</p>
+    <div class="stats">
+      <div class="stat"><h3 data-target="15">0</h3><p>Years Experience</p></div>
+      <div class="stat"><h3 data-target="2000">0</h3><p>Happy Clients</p></div>
+      <div class="stat"><h3 data-target="100">0</h3><p>% Handmade</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="services" class="services reveal">
+  <div class="section-title">
+    <h2>Our Services</h2>
+    <p>Hover on each card to see more details</p>
+  </div>
+  <div class="service-grid">
+    <div class="flip-card"><div class="flip-inner">
+      <div class="flip-front"><div class="icon">✂️</div><h3>Custom Tailoring</h3></div>
+      <div class="flip-back"><p>Garments made exactly to your measurements and personal style preferences.</p></div>
+    </div></div>
+    <div class="flip-card"><div class="flip-inner">
+      <div class="flip-front"><div class="icon">👗</div><h3>Bridal & Formal Wear</h3></div>
+      <div class="flip-back"><p>Wedding gowns, evening dresses, and traditional outfits crafted with elegance.</p></div>
+    </div></div>
+    <div class="flip-card"><div class="flip-inner">
+      <div class="flip-front"><div class="icon">🧵</div><h3>Alterations</h3></div>
+      <div class="flip-back"><p>Quick, precise fixes for the perfect fit — hemming, resizing, and repairs.</p></div>
+    </div></div>
+    <div class="flip-card"><div class="flip-inner">
+      <div class="flip-front"><div class="icon">👔</div><h3>Uniforms</h3></div>
+      <div class="flip-back"><p>Durable and comfortable uniforms for schools, offices, and businesses.</p></div>
+    </div></div>
+    <div class="flip-card"><div class="flip-inner">
+      <div class="flip-front"><div class="icon">🏠</div><h3>Home Textiles</h3></div>
+      <div class="flip-back"><p>Custom curtains, cushions, and linens designed to match your home décor.</p></div>
+    </div></div>
+    <div class="flip-card"><div class="flip-inner">
+      <div class="flip-front"><div class="icon">🎨</div><h3>Custom Designs</h3></div>
+      <div class="flip-back"><p>Unique creations brought to life from your own sketches or inspiration photos.</p></div>
+    </div></div>
+  </div>
+</section>
+
+<section id="gallery" class="gallery reveal">
+  <div class="section-title">
+    <h2>Our Gallery</h2>
+    <p>Filter by category to see our recent work</p>
+  </div>
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="bridal">Bridal</button>
+    <button class="filter-btn" data-filter="casual">Casual</button>
+    <button class="filter-btn" data-filter="formal">Formal</button>
+  </div>
+  <div class="gallery-grid" id="galleryGrid">
+    <div class="gallery-item" data-cat="bridal"><img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=500&q=80" alt="Design"><div class="gallery-overlay">🔍</div></div>
+    <div class="gallery-item" data-cat="casual"><img src="https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?auto=format&fit=crop&w=500&q=80" alt="Design"><div class="gallery-overlay">🔍</div></div>
+    <div class="gallery-item" data-cat="formal"><img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=500&q=80" alt="Design"><div class="gallery-overlay">🔍</div></div>
+    <div class="gallery-item" data-cat="casual"><img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=500&q=80" alt="Design"><div class="gallery-overlay">🔍</div></div>
+    <div class="gallery-item" data-cat="formal"><img src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=500&q=80" alt="Design"><div class="gallery-overlay">🔍</div></div>
+    <div class="gallery-item" data-cat="bridal"><img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=500&q=80" alt="Design"><div class="gallery-overlay">🔍</div></div>
+  </div>
+</section>
+
+<div id="lightbox">
+  <span class="close-lb">&times;</span>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<section id="estimate" class="reveal">
+  <div class="section-title">
+    <h2>Get a Quick Estimate</h2>
+    <p>Select your garment type and fabric to get an approximate price</p>
+  </div>
+  <div class="estimator">
+    <h3>Price Estimator</h3>
+    <div class="estimator-row">
+      <select id="garmentType">
+        <option value="500">Shirt / Kurta — Basic</option>
+        <option value="1200">Dress — Standard</option>
+        <option value="3500">Bridal Gown — Premium</option>
+        <option value="800">Suit / Blazer</option>
+        <option value="300">Alteration Only</option>
+      </select>
+      <select id="fabricType">
+        <option value="1">Standard Fabric</option>
+        <option value="1.4">Premium Fabric (+40%)</option>
+        <option value="1.8">Luxury Fabric (+80%)</option>
+      </select>
+    </div>
+    <div class="estimator-row">
+      <input type="number" id="quantity" placeholder="Quantity" min="1" value="1">
+    </div>
+    <div class="estimate-result" id="estimateResult">Estimated Price: $0</div>
+    <div style="text-align:center;margin-top:20px;">
+      <a href="#contact" class="btn btn-primary">Confirm This Order</a>
+    </div>
+  </div>
+</section>
+
+<section id="reviews" class="testimonials reveal">
+  <div class="section-title">
+    <h2>Client Reviews</h2>
+    <p>What our happy customers say</p>
+  </div>
+  <div class="testi-slider" id="testiSlider">
+    <div class="testi-slide active">
+      <p>"Absolutely flawless work! My wedding dress was exactly what I dreamed of."</p>
+      <div class="testi-name">— Amina K.</div>
+    </div>
+    <div class="testi-slide">
+      <p>"Fast service, fair pricing, and true craftsmanship. Highly recommend!"</p>
+      <div class="testi-name">— Karim B.</div>
+    </div>
+    <div class="testi-slide">
+      <p>"Always listens to what I need — every outfit fits me perfectly."</p>
+      <div class="testi-name">— Leila M.</div>
+    </div>
+  </div>
+  <div class="testi-dots" id="testiDots"></div>
+</section>
+
+<section id="contact" class="reveal">
+  <div class="section-title">
+    <h2>Contact Us</h2>
+    <p>We'd love to create your next garment</p>
+  </div>
+  <div class="contact-wrap">
+    <div class="contact-info">
+      <h3>Get In Touch</h3>
+      <div class="contact-item"><span class="icon">📍</span><p>[Shop Address], City, Country</p></div>
+      <div class="contact-item"><span class="icon">📞</span><p>+00 000 000 000</p></div>
+      <div class="contact-item"><span class="icon">✉️</span><p>contact@momstailor.com</p></div>
+      <div class="contact-item"><span class="icon">🕒</span><p>Monday - Saturday: 9am - 7pm</p></div>
+    </div>
+    <div class="contact-form">
+      <form id="contactForm">
+        <input type="text" placeholder="Your Name" required>
+        <input type="tel" placeholder="Your Phone Number" required>
+        <textarea rows="4" placeholder="Describe your request (garment type, measurements, deadline...)" required></textarea>
+        <button type="submit">Send Request</button>
+      </form>
+      <p id="formMsg">Thank you! We'll contact you very soon.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>&copy; 2026 Moms Tailor. All rights reserved.</p>
+  <div class="socials">
+    <a href="#">Facebook</a> | <a href="#">Instagram</a> | <a href="#">WhatsApp</a>
+  </div>
+</footer>
+
+<a href="https://wa.me/00000000000" class="whatsapp-float" target="_blank">💬</a>
+<button id="backToTop">↑</button>
+
+<script>
+/* ============ PRELOADER ============ */
+window.addEventListener('load', () => {
+  setTimeout(()=>{
+    document.getElementById('preloader').classList.add('hide');
+  }, 900);
+});
+
+/* ============ CUSTOM CURSOR ============ */
+const cursor = document.getElementById('needle-cursor');
+const dot = document.getElementById('needle-dot');
+document.addEventListener('mousemove', e=>{
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+  dot.style.left = e.clientX + 'px';
+  dot.style.top = e.clientY + 'px';
+});
+document.querySelectorAll('a, button, .gallery-item, .flip-card').forEach(el=>{
+  el.addEventListener('mouseenter', ()=>{
+    cursor.style.width='45px'; cursor.style.height='45px';
+    cursor.style.background='rgba(201,151,58,0.25)';
+  });
+  el.addEventListener('mouseleave', ()=>{
+    cursor.style.width='26px'; cursor.style.height='26px';
+    cursor.style.background='radial-gradient(circle,var(--gold) 0%,transparent 70%)';
+  });
+});
+
+/* ============ MOBILE MENU ============ */
+const menuToggle = document.getElementById('menuToggle');
+const navMenu = document.getElementById('navMenu');
+menuToggle.addEventListener('click', ()=> navMenu.classList.toggle('active'));
+document.querySelectorAll('nav ul li a').forEach(link=>{
+  link.addEventListener('click', ()=> navMenu.classList.remove('active'));
+});
+
+/* ============ DARK MODE ============ */
+const modeToggle = document.getElementById('modeToggle');
+modeToggle.addEventListener('click', ()=>{
+  document.body.classList.toggle('dark');
+  modeToggle.textContent = document.body.classList.contains('dark') ? '☀️ Light' : '🌙 Dark';
+});
+
+/* ============ TYPING EFFECT ============ */
+const typedEl = document.getElementById('typed-text');
+const phrases = ["Tailoring with Love & Precision", "Custom Fits, Timeless Style", "Stitching Your Story"];
+let pIndex=0, cIndex=0, deleting=false;
+function typeLoop(){
+  const current = phrases[pIndex];
+  if(!deleting){
+    typedEl.textContent = current.substring(0, cIndex+1);
+    cIndex++;
+    if(cIndex === current.length){ deleting=true; setTimeout(typeLoop,1500); return; }
+  } else {
+    typedEl.textContent = current.substring(0, cIndex-1);
+    cIndex--;
+    if(cIndex === 0){ deleting=false; pIndex=(pIndex+1)%phrases.length; }
+  }
+  setTimeout(typeLoop, deleting?40:90);
+}
+typeLoop();
+
+/* ============ SCROLL REVEAL ============ */
+const reveals = document.querySelectorAll('.reveal');
+const revealObserver = new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting) entry.target.classList.add('active');
+  });
+},{threshold:0.15});
+reveals.forEach(r=>revealObserver.observe(r));
+
+/* ============ COUNTER ANIMATION ============ */
+const counters = document.querySelectorAll('.stat h3');
+let counted=false;
+const counterObserver = new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting && !counted){
+      counted=true;
+      counters.forEach(counter=>{
+        const target = +counter.getAttribute('data-target');
+        let count=0;
+        const step = Math.ceil(target/60);
+        const update=()=>{
+          count += step;
+          if(count >= target){ counter.textContent = target; }
+          else { counter.textContent = count; requestAnimationFrame(update); }
+        };
+        update();
+      });
+    }
+  });
+},{threshold:0.5});
+if(document.querySelector('.stats')) counterObserver.observe(document.querySelector('.stats'));
+
+/* ============ GALLERY FILTER ============ */
+const filterBtns = document.querySelectorAll('.filter-btn');
+const galleryItems = document.querySelectorAll('.gallery-item');
+filterBtns.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    filterBtns.forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const filter = btn.getAttribute('data-filter');
+    galleryItems.forEach(item=>{
+      if(filter==='all' || item.getAttribute('data-cat')===filter){
+        item.style.display='block';
+      } else {
+        item.style.display='none';
+      }
+    });
+  });
+});
+
+/* ============ LIGHTBOX ============ */
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+galleryItems.forEach(item=>{
+  item.addEventListener('click', ()=>{
+    lightbox.style.display='flex';
+    lightboxImg.src = item.querySelector('img').src;
+  });
+});
+document.querySelector('.close-lb').addEventListener('click', ()=> lightbox.style.display='none');
+lightbox.addEventListener('click', e=>{ if(e.target===lightbox) lightbox.style.display='none'; });
+
+/* ============ PRICE ESTIMATOR ============ */
+const garmentType = document.getElementById('garmentType');
+const fabricType = document.getElementById('fabricType');
+const quantity = document.getElementById('quantity');
+const estimateResult = document.getElementById('estimateResult');
+function calculateEstimate(){
+  const base = parseFloat(garmentType.value);
+  const fabricMultiplier = parseFloat(fabricType.value);
+  const qty = parseInt(quantity.value) || 1;
+  const total = base * fabricMultiplier * qty;
+  estimateResult.textContent = `Estimated Price: $${total.toFixed(2)}`;
+}
+[garmentType, fabricType, quantity].forEach(el=> el.addEventListener('input', calculateEstimate));
+calculateEstimate();
+
+/* ============ TESTIMONIAL SLIDER ============ */
+const slides = document.querySelectorAll('.testi-slide');
+const dotsContainer = document.getElementById('testiDots');
+let current=0;
+slides.forEach((_, i)=>{
+  const dot = document.createElement('div');
+  dot.classList.add('dot');
+  if(i===0) dot.classList.add('active');
+  dot.addEventListener('click', ()=> showSlide(i));
+  dotsContainer.appendChild(dot);
+});
+const dots = document.querySelectorAll('.dot');
+function showSlide(index){
+  slides.forEach(s=>s.classList.remove('active'));
+  dots.forEach(d=>d.classList.remove('active'));
+  slides[index].classList.add('active');
+  dots[index].classList.add('active');
+  current = index;
+}
+setInterval(()=>{
+  current = (current+1) % slides.length;
+  showSlide(current);
+}, 4500);
+
+/* ============ CONTACT FORM ============ */
+document.getElementById('contactForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const msg = document.getElementById('formMsg');
+  msg.style.display='block';
+  this.reset();
+  setTimeout(()=> msg.style.display='none', 4000);
+});
+
+/* ============ SCROLL PROGRESS + BACK TO TOP ============ */
+const progressBar = document.getElementById('scroll-progress');
+const backToTop = document.getElementById('backToTop');
+window.addEventListener('scroll', ()=>{
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  progressBar.style.width = (scrollTop/docHeight*100) + '%';
+  if(scrollTop > 400) backToTop.classList.add('show');
+  else backToTop.classList.remove('show');
+});
+backToTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+</script>
+
+</body>
+</html>
